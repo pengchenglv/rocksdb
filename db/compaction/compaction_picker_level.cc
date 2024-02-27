@@ -21,6 +21,7 @@ namespace ROCKSDB_NAMESPACE {
 
 bool LevelCompactionPicker::NeedsCompaction(
     const VersionStorageInfo* vstorage) const {
+  // 需要ttl掉的文件数不为零，需要compaction
   if (!vstorage->ExpiredTtlFiles().empty()) {
     return true;
   }

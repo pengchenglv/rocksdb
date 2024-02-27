@@ -3509,6 +3509,8 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
 
   bool is_manual = (manual_compaction != nullptr);
   std::unique_ptr<Compaction> c;
+
+  // 设置compaction
   if (prepicked_compaction != nullptr &&
       prepicked_compaction->compaction != nullptr) {
     c.reset(prepicked_compaction->compaction);
