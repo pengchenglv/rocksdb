@@ -25,18 +25,23 @@ bool LevelCompactionPicker::NeedsCompaction(
   if (!vstorage->ExpiredTtlFiles().empty()) {
     return true;
   }
+  // 被mark为需要周期性compaction的文件数不为零
   if (!vstorage->FilesMarkedForPeriodicCompaction().empty()) {
     return true;
   }
+  // 最底层被mark为需要compaction的文件数为零
   if (!vstorage->BottommostFilesMarkedForCompaction().empty()) {
     return true;
   }
+  // 被mark为需要compaction的文件数不为零
   if (!vstorage->FilesMarkedForCompaction().empty()) {
     return true;
   }
+  // 强制blob gc
   if (!vstorage->FilesMarkedForForcedBlobGC().empty()) {
     return true;
   }
+  // 只要有一层的score大于零，就compaction
   for (int i = 0; i <= vstorage->MaxInputLevel(); i++) {
     if (vstorage->CompactionScore(i) >= 1) {
       return true;
@@ -203,6 +208,7 @@ void LevelCompactionBuilder::PickFileToCompact(
 void LevelCompactionBuilder::SetupInitialFiles() {
   // Find the compactions by size on all levels.
   bool skipped_l0_to_base = false;
+  // vstorage_->CompactionScore是按照分数由高到低排序的，vstorage_->CompactionScoreLevel与之相对应
   for (int i = 0; i < compaction_picker_->NumberLevels() - 1; i++) {
     start_level_score_ = vstorage_->CompactionScore(i);
     start_level_ = vstorage_->CompactionScoreLevel(i);
@@ -919,6 +925,7 @@ bool LevelCompactionBuilder::PickSizeBasedIntraL0Compaction() {
   size_t min_num_file =
       std::max(2, mutable_cf_options_.level0_file_num_compaction_trigger);
   if (l0_files.size() < min_num_file) {
+    // l0的文件数不足，不需要Compaction
     return false;
   }
   uint64_t l0_size = 0;
@@ -938,6 +945,7 @@ bool LevelCompactionBuilder::PickSizeBasedIntraL0Compaction() {
       break;
     }
   }
+  // base level的文件size不是l0的是10倍，不需要Compaction
   if (lbase_size <= min_lbase_size) {
     return false;
   }
