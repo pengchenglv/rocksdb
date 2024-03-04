@@ -78,6 +78,7 @@ class VersionStorageInfo;
 class CompactionFilter;
 
 // A Compaction encapsulates metadata about a compaction.
+// 包含一次compaction的元信息
 class Compaction {
  public:
   Compaction(VersionStorageInfo* input_version,
@@ -115,6 +116,7 @@ class Compaction {
 
   // Returns the level associated to the specified compaction input level.
   // If compaction_input_level is not specified, then input_level is set to 0.
+  // compaction_input_level 和lsm里的level没有关系，其实就是一个vector的index而已
   int level(size_t compaction_input_level = 0) const {
     return inputs_[compaction_input_level].level;
   }

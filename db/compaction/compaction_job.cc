@@ -250,6 +250,7 @@ void CompactionJob::Prepare() {
   auto* c = compact_->compaction;
   ColumnFamilyData* cfd = c->column_family_data();
   assert(cfd != nullptr);
+  // 需要compaction的level必定有file，否则assert失败
   assert(cfd->current()->storage_info()->NumLevelFiles(
              compact_->compaction->level()) > 0);
 
@@ -450,6 +451,7 @@ void CompactionJob::ReleaseSubcompactionResources() {
   ShrinkSubcompactionResources(extra_num_subcompaction_threads_reserved_);
 }
 
+// 获取sub compaction的边界
 void CompactionJob::GenSubcompactionBoundaries() {
   // The goal is to find some boundary keys so that we can evenly partition
   // the compaction input data into max_subcompactions ranges.
@@ -560,6 +562,7 @@ void CompactionJob::GenSubcompactionBoundaries() {
     // account bg_compaction_scheduled or bg_bottom_compaction_scheduled.
 
     // Initialized by the number of input files
+    // 原计划，sub compaction的数目等于input files的数目
     num_planned_subcompactions = static_cast<uint64_t>(c->num_input_files(0));
     uint64_t max_subcompactions_limit = GetSubcompactionsLimit();
     if (max_subcompactions_limit < num_planned_subcompactions) {
