@@ -233,8 +233,10 @@ bool CompactionIterator::InvokeFilterIfNeeded(bool* need_skip,
     return true;
   }
 
+  // 先把decision设置为未做决定
   CompactionFilter::Decision decision =
       CompactionFilter::Decision::kUndetermined;
+  // 通过连续的三目预算来确定CompactionFilter的ValueType
   CompactionFilter::ValueType value_type =
       ikey_.type == kTypeValue ? CompactionFilter::ValueType::kValue
       : ikey_.type == kTypeBlobIndex
