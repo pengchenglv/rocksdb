@@ -2419,6 +2419,7 @@ Status DBImpl::AtomicFlushMemTables(
   }
   Status s;
   autovector<ColumnFamilyData*> candidate_cfds;
+  // 如果没有指定columnFamily，就去当前version的ColumnFamily
   if (provided_candidate_cfds.empty()) {
     // Generate candidate cfds if not provided
     {
@@ -2515,6 +2516,7 @@ Status DBImpl::AtomicFlushMemTables(
           cfd->Ref();
         }
       }
+      // 所有的cf放在一个flush_req里
       GenerateFlushRequest(cfds, flush_reason, &flush_req);
       SchedulePendingFlush(flush_req);
       MaybeScheduleFlushOrCompaction();
@@ -2832,6 +2834,8 @@ void DBImpl::MaybeScheduleFlushOrCompaction() {
     return;
   }
   auto bg_job_limits = GetBGJobLimits();
+
+  // flush是高优先级？
   bool is_flush_pool_empty =
       env_->GetBackgroundThreads(Env::Priority::HIGH) == 0;
   while (!is_flush_pool_empty && unscheduled_flushes_ > 0 &&
@@ -2990,6 +2994,7 @@ ColumnFamilyData* DBImpl::PickCompactionFromQueue(
   return cfd;
 }
 
+// flush是异步的，那么如果flush卡住，checkpoint是不是也会卡住呢？
 void DBImpl::SchedulePendingFlush(const FlushRequest& flush_req) {
   mutex_.AssertHeld();
   if (reject_new_background_jobs_) {

@@ -84,6 +84,7 @@ Status CheckpointImpl::CreateCheckpoint(const std::string& checkpoint_dir,
 
   Status s = db_->GetEnv()->FileExists(checkpoint_dir);
   if (s.ok()) {
+    // 要求目录不存在
     return Status::InvalidArgument("Directory exists");
   } else if (!s.IsNotFound()) {
     assert(s.IsIOError());
@@ -115,6 +116,7 @@ Status CheckpointImpl::CreateCheckpoint(const std::string& checkpoint_dir,
   uint64_t sequence_number = 0;
   if (s.ok()) {
     // enable file deletions
+    // 创建checkpoint时禁止删除文件？
     s = db_->DisableFileDeletions();
     const bool disabled_file_deletions = s.ok();
 
@@ -157,6 +159,7 @@ Status CheckpointImpl::CreateCheckpoint(const std::string& checkpoint_dir,
 
   if (s.ok()) {
     // move tmp private backup to real snapshot directory
+    // 重命名
     s = db_->GetEnv()->RenameFile(full_private_path, checkpoint_dir);
   }
   if (s.ok()) {

@@ -206,6 +206,7 @@ Status DBImpl::GetLiveFilesStorageInfo(
   // metadata.
   mutex_.Lock();
   if (flush_memtable) {
+    // flush memtable?
     Status status = FlushForGetLiveFiles();
     if (!status.ok()) {
       mutex_.Unlock();
@@ -223,6 +224,7 @@ Status DBImpl::GetLiveFilesStorageInfo(
     VersionStorageInfo& vsi = *cfd->current()->storage_info();
     auto& cf_paths = cfd->ioptions()->cf_paths;
 
+    // lamada 表达式
     auto GetDir = [&](size_t path_id) {
       // Matching TableFileName() behavior
       if (path_id >= cf_paths.size()) {

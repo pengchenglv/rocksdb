@@ -22,6 +22,7 @@ struct ExportImportFilesMetaData;
 class Checkpoint {
  public:
   // Creates a Checkpoint object to be used for creating openable snapshots
+  // 仅仅创建一个Checkpoint对象，用于创建可打开的快照。
   static Status Create(DB* db, Checkpoint** checkpoint_ptr);
 
   // Builds an openable snapshot of RocksDB. checkpoint_dir should contain an
