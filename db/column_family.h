@@ -830,6 +830,7 @@ class RefedColumnFamilySet {
 
 // We use ColumnFamilyMemTablesImpl to provide WriteBatch a way to access
 // memtables of different column families (specified by ID in the write batch)
+// 代表多个cf的memtable的集合。
 class ColumnFamilyMemTablesImpl : public ColumnFamilyMemTables {
  public:
   explicit ColumnFamilyMemTablesImpl(ColumnFamilySet* column_family_set)

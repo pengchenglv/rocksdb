@@ -2282,6 +2282,7 @@ Status DBImpl::FlushMemTable(ColumnFamilyData* cfd,
   Status s;
   if (!flush_options.allow_write_stall) {
     bool flush_needed = true;
+    // 这个函数的作用是保证增加一个memtable并不会导致write stall
     s = WaitUntilFlushWouldNotStallWrites(cfd, &flush_needed);
     TEST_SYNC_POINT("DBImpl::FlushMemTable:StallWaitDone");
     if (!s.ok() || !flush_needed) {
@@ -2648,6 +2649,7 @@ Status DBImpl::WaitUntilFlushWouldNotStallWrites(ColumnFamilyData* cfd,
 
       uint64_t earliest_memtable_id =
           std::min(cfd->mem()->GetID(), cfd->imm()->GetEarliestMemTableID());
+      // 决定flush时的memtable已经被flush了，不用再flush了
       if (earliest_memtable_id > orig_active_memtable_id) {
         // We waited so long that the memtable we were originally waiting on was
         // flushed.

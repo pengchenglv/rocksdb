@@ -2024,6 +2024,7 @@ class MemTableInserter : public WriteBatch::Handler {
     }
 
     Status ret_status;
+    // 在此处seek到了指定的memtable
     if (UNLIKELY(!SeekToColumnFamily(column_family_id, &ret_status))) {
       if (ret_status.ok() && rebuilding_trx_ != nullptr) {
         assert(!write_after_commit_);
