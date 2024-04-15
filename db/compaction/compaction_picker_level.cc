@@ -210,6 +210,7 @@ void LevelCompactionBuilder::SetupInitialFiles() {
   bool skipped_l0_to_base = false;
   // vstorage_->CompactionScore是按照分数由高到低排序的，vstorage_->CompactionScoreLevel与之相对应
   for (int i = 0; i < compaction_picker_->NumberLevels() - 1; i++) {
+    // 先去score比较大的level
     start_level_score_ = vstorage_->CompactionScore(i);
     start_level_ = vstorage_->CompactionScoreLevel(i);
     assert(i == 0 || start_level_score_ <= vstorage_->CompactionScore(i - 1));
@@ -220,6 +221,8 @@ void LevelCompactionBuilder::SetupInitialFiles() {
         // may starve.
         continue;
       }
+      // 为什么L0的数据就往base_level compact呢？
+      // 在pick file to compact之前，output_level就已经确定了
       output_level_ =
           (start_level_ == 0) ? vstorage_->base_level() : start_level_ + 1;
       bool picked_file_to_compact = PickFileToCompact();
@@ -228,6 +231,7 @@ void LevelCompactionBuilder::SetupInitialFiles() {
       if (picked_file_to_compact) {
         // found the compaction!
         if (start_level_ == 0) {
+          // score的计算方法
           // L0 score = `num L0 files` / `level0_file_num_compaction_trigger`
           compaction_reason_ = CompactionReason::kLevelL0FilesNum;
         } else {
@@ -257,6 +261,7 @@ void LevelCompactionBuilder::SetupInitialFiles() {
     } else {
       // Compaction scores are sorted in descending order, no further scores
       // will be >= 1.
+      // 如果当前最大的score都比1小，那么就没有必要再check下去了，直接break即可
       break;
     }
   }
@@ -628,6 +633,7 @@ uint32_t LevelCompactionBuilder::GetPathId(
   return p;
 }
 
+// 从l0 中挑选彼此之间没有overlap的file，且这些file和l1的文件没有overlap，这些文件可以直接move到L1
 bool LevelCompactionBuilder::TryPickL0TrivialMove() {
   if (vstorage_->base_level() <= 0) {
     return false;
@@ -789,6 +795,7 @@ bool LevelCompactionBuilder::PickFileToCompact() {
   // than one concurrent compactions at this level. This
   // could be made better by looking at key-ranges that are
   // being compacted at level 0.
+  // 虽然l0可以有多个并发的compact，只有一个是往base level compact，其他的只能intra compaction了
   if (start_level_ == 0 &&
       !compaction_picker_->level0_compactions_in_progress()->empty()) {
     if (PickSizeBasedIntraL0Compaction()) {
@@ -806,6 +813,7 @@ bool LevelCompactionBuilder::PickFileToCompact() {
   if (TryPickL0TrivialMove()) {
     return true;
   }
+  // 为了尽可能加大L0 intra compact的并发度，选择intra compaction
   if (start_level_ == 0 && PickSizeBasedIntraL0Compaction()) {
     return true;
   }
@@ -914,6 +922,7 @@ bool LevelCompactionBuilder::PickIntraL0Compaction() {
                                &start_level_inputs_);
 }
 
+// 为什么L0的intra compaction需要结合base level来判断呢？
 bool LevelCompactionBuilder::PickSizeBasedIntraL0Compaction() {
   assert(start_level_ == 0);
   int base_level = vstorage_->base_level();
@@ -945,7 +954,7 @@ bool LevelCompactionBuilder::PickSizeBasedIntraL0Compaction() {
       break;
     }
   }
-  // base level的文件size不是l0的是10倍，不需要Compaction
+  // 说明L1的文件size没有远大于l0，就没有必要进行intra compaction了
   if (lbase_size <= min_lbase_size) {
     return false;
   }
