@@ -232,10 +232,12 @@ class CompactionPicker {
 
   // Keeps track of all compactions that are running on Level0.
   // Protected by DB mutex
+  // 真的仅仅是keep track。。
   std::set<Compaction*> level0_compactions_in_progress_;
 
   // Keeps track of all compactions that are running.
   // Protected by DB mutex
+  // 真的仅仅是keep track。。
   std::unordered_set<Compaction*> compactions_in_progress_;
 
   const InternalKeyComparator* const icmp_;

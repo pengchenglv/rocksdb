@@ -209,6 +209,7 @@ void LevelCompactionBuilder::SetupInitialFiles() {
   // Find the compactions by size on all levels.
   bool skipped_l0_to_base = false;
   // vstorage_->CompactionScore是按照分数由高到低排序的，vstorage_->CompactionScoreLevel与之相对应
+  // 逐层pick，如果没找到，就换一层
   for (int i = 0; i < compaction_picker_->NumberLevels() - 1; i++) {
     // 先去score比较大的level
     start_level_score_ = vstorage_->CompactionScore(i);
@@ -265,6 +266,7 @@ void LevelCompactionBuilder::SetupInitialFiles() {
       break;
     }
   }
+  // 已经成功pick，则返回
   if (!start_level_inputs_.empty()) {
     return;
   }
@@ -638,6 +640,7 @@ bool LevelCompactionBuilder::TryPickL0TrivialMove() {
   if (vstorage_->base_level() <= 0) {
     return false;
   }
+  // 为什么要保证没有采用压缩算法呢
   if (start_level_ == 0 && mutable_cf_options_.compression_per_level.empty() &&
       !vstorage_->LevelFiles(output_level_).empty() &&
       ioptions_.db_paths.size() <= 1) {
@@ -823,6 +826,7 @@ bool LevelCompactionBuilder::PickFileToCompact() {
 
   // Pick the file with the highest score in this level that is not already
   // being compacted.
+  // 这里并不是score，就是file在该层的index
   const std::vector<int>& file_scores =
       vstorage_->FilesByCompactionPri(start_level_);
 
@@ -847,6 +851,8 @@ bool LevelCompactionBuilder::PickFileToCompact() {
     }
 
     start_level_inputs_.files.push_back(f);
+    // 如果挑选出来的input file扩展以后的文件中有正在处于compaction的文件，或者扩展后的文件和正在compaction(output)文件有overlap，则重新选择
+    // 这个地方是不是说明，同一个lsm的compaction是并发进行的呢？
     if (!compaction_picker_->ExpandInputsToCleanCut(cf_name_, vstorage_,
                                                     &start_level_inputs_) ||
         compaction_picker_->FilesRangeOverlapWithCompaction(

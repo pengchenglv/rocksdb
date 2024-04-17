@@ -53,6 +53,7 @@ enum CompactionPri : char {
   // amplification.
   // Files marked for compaction will be prioritized over files that are not
   // marked.
+  // 和下一层overlap最小的file先compact
   kMinOverlappingRatio = 0x3,
   // Keeps a cursor(s) of the successor of the file (key range) was/were
   // compacted before, and always picks the next files (key range) in that

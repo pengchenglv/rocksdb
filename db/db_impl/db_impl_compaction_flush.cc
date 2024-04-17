@@ -3696,6 +3696,7 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
           // it to the queue and schedule a new thread.
           if (cfd->NeedsCompaction()) {
             // Yes, we need more compactions!
+            // why??
             AddToCompactionQueue(cfd);
             ++unscheduled_compactions_;
             MaybeScheduleFlushOrCompaction();

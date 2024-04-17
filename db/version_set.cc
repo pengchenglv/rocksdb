@@ -4101,6 +4101,7 @@ void VersionStorageInfo::UpdateFilesByCompactionPri(
                           CompareCompensatedSizeDescending);
         break;
       case kOldestLargestSeqFirst:
+        // seq num 比较小说明 seq 比较旧
         std::sort(temp.begin(), temp.end(),
                   [](const Fsize& f1, const Fsize& f2) -> bool {
                     return f1.file->fd.largest_seqno <

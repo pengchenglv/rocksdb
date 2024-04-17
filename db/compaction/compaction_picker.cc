@@ -140,6 +140,7 @@ void CompactionPicker::ReleaseCompactionFiles(Compaction* c, Status status) {
   }
 }
 
+// 获取inputs file的最大key和最小key
 void CompactionPicker::GetRange(const CompactionInputFiles& inputs,
                                 InternalKey* smallest,
                                 InternalKey* largest) const {
@@ -1145,6 +1146,7 @@ void CompactionPicker::UnregisterCompaction(Compaction* c) {
 void CompactionPicker::PickFilesMarkedForCompaction(
     const std::string& cf_name, VersionStorageInfo* vstorage, int* start_level,
     int* output_level, CompactionInputFiles* start_level_inputs) {
+  // 没有文件被标记为compaction，直接返回
   if (vstorage->FilesMarkedForCompaction().empty()) {
     return;
   }
@@ -1193,6 +1195,7 @@ bool CompactionPicker::GetOverlappingL0Files(
     int output_level, int* parent_index) {
   // Two level 0 compaction won't run at the same time, so don't need to worry
   // about files on level 0 being compacted.
+  // ?? L0 不会同时运行两个compaction
   assert(level0_compactions_in_progress()->empty());
   InternalKey smallest, largest;
   GetRange(*start_level_inputs, &smallest, &largest);
