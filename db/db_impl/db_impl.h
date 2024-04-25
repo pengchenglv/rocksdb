@@ -792,6 +792,7 @@ class DBImpl : public DB {
     return &logs_with_prep_tracker_;
   }
 
+  // 所谓job limits，本质上就是flush的limit和compaction的limit
   struct BGJobLimits {
     int max_flushes;
     int max_compactions;

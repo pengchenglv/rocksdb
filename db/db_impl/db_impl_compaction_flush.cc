@@ -2840,6 +2840,7 @@ void DBImpl::MaybeScheduleFlushOrCompaction() {
   // flush是高优先级？
   bool is_flush_pool_empty =
       env_->GetBackgroundThreads(Env::Priority::HIGH) == 0;
+  // 为什么是一个while呢？并且没有在check is_flush_pool_empty
   while (!is_flush_pool_empty && unscheduled_flushes_ > 0 &&
          bg_flush_scheduled_ < bg_job_limits.max_flushes) {
     TEST_SYNC_POINT_CALLBACK(
@@ -2849,6 +2850,7 @@ void DBImpl::MaybeScheduleFlushOrCompaction() {
     FlushThreadArg* fta = new FlushThreadArg;
     fta->db_ = this;
     fta->thread_pri_ = Env::Priority::HIGH;
+    // 要开始flush了，为什么这里arg只有priority和db，因为在flush的函数里，会把真正需要flush的对象从queue中读出来，就行flush操作
     env_->Schedule(&DBImpl::BGWorkFlush, fta, Env::Priority::HIGH, this,
                    &DBImpl::UnscheduleFlushCallback);
     --unscheduled_flushes_;
@@ -2859,6 +2861,7 @@ void DBImpl::MaybeScheduleFlushOrCompaction() {
 
   // special case -- if high-pri (flush) thread pool is empty, then schedule
   // flushes in low-pri (compaction) thread pool.
+  // 如果is_flush_pool_empty为空，则使用LOW 优先级的线程来进行flush
   if (is_flush_pool_empty) {
     while (unscheduled_flushes_ > 0 &&
            bg_flush_scheduled_ + bg_compaction_scheduled_ <
@@ -2918,6 +2921,7 @@ DBImpl::BGJobLimits DBImpl::GetBGJobLimits(int max_background_flushes,
                                            int max_background_jobs,
                                            bool parallelize_compactions) {
   BGJobLimits res;
+  // 如果用户没有指定，就把1/4的job 分给flush，剩下的3/4分给compaction
   if (max_background_flushes == -1 && max_background_compactions == -1) {
     // for our first stab implementing max_background_jobs, simply allocate a
     // quarter of the threads to flushes.
