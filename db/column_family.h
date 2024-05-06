@@ -845,6 +845,7 @@ class ColumnFamilyMemTablesImpl : public ColumnFamilyMemTables {
   // returns false if column family doesn't exist
   // REQUIRES: use this function of DBImpl::column_family_memtables_ should be
   //           under a DB mutex OR from a write thread
+  // 为什么一定要先seek，然后再get呢？一种可能就是不仅仅get memtable
   bool Seek(uint32_t column_family_id) override;
 
   // Returns log number of the selected column family

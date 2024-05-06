@@ -76,6 +76,7 @@ namespace ROCKSDB_NAMESPACE {
 // anon namespace for file-local types
 namespace {
 
+// 使用移位来表示操作类型，可以使用位运算来判断类型，效率会比较高
 enum ContentFlags : uint32_t {
   DEFERRED = 1 << 0,
   HAS_PUT = 1 << 1,
@@ -2209,6 +2210,7 @@ class MemTableInserter : public WriteBatch::Handler {
     return s;
   }
 
+  // DeleteRange也会调用这个函数，start key为key，end key为value，而value type是kTypeRangeDeletion
   Status DeleteImpl(uint32_t /*column_family_id*/, const Slice& key,
                     const Slice& value, ValueType delete_type,
                     const ProtectionInfoKVOS64* kv_prot_info) {
