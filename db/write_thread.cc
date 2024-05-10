@@ -445,6 +445,7 @@ size_t WriteThread::EnterAsBatchGroupLeader(Writer* leader,
   // Allow the group to grow up to a maximum size, but if the
   // original write is small, limit the growth so we do not slow
   // down the small write too much.
+  // 如果第一个writer的batch太小，则缩小batch limit的上限
   size_t max_size = max_write_batch_group_size_bytes;
   const uint64_t min_batch_size_bytes = max_write_batch_group_size_bytes / 8;
   if (size <= min_batch_size_bytes) {
